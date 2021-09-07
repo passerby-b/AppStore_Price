@@ -1,9 +1,11 @@
+
 const notify = require('./sendNotify');
 const $ = new API("appstore_price");
 
 let apps = [
     'cn/app/alook浏览器-2倍速/id1261944766',
-    'cn/app/thor-http-抓包嗅探分析-接口调试-断点重写/id1210562295'
+    'cn/app/thor-http-抓包嗅探分析-接口调试-断点重写/id1210562295',
+    'us/app/quantumult-x/id1443988620'
 ];
 
 (async () => {
@@ -37,7 +39,7 @@ let apps = [
                 let name = obj.name, price = obj.offers[0].priceFormatted;
                 console.log(name, price);
                 if ($.read(name) != price) {
-                    notify.sendNotify('', name + '价格变动,原价格:' + $.read(name) + ',现价格:' + price);
+                    if ($.read(name)) notify.sendNotify('', name + '价格变动,原价格:' + $.read(name) + ',现价格:' + price);
                     $.write(price, name);
                 }
             }
