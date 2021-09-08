@@ -14,7 +14,7 @@ let apps = [
         for (let index = 0; index < apps.length; index++) {
             const item = apps[index];
             const myRequest = {
-                url: 'https://apps.apple.com/' + encodeURI(item),
+                url: 'https://itunes.apple.com/lookup?id=' + item.split('/')[3].replace('id', '') + '&country=' + item.split('/')[0],
                 headers: {
                     'User-Agent': ' iTunes/12.6.5 (Windows; Microsoft Windows 7 x64 Ultimate Edition Service Pack 1 (Build 7601); x64) AppleWebKit/7605.1033.1002.2',
                     'Accept': ' text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -22,32 +22,23 @@ let apps = [
                 }
             };
 
-            let seachResult = {}, skey = 'its.serverData=', ekey = '"storeCreditGiftingUpdateEnabled":';
             await $.http.get(myRequest).then(async response => {
                 //console.log(response.body);
-                let body = response.body;
-                let s = body.indexOf(skey);
-                let e = body.indexOf(ekey);
-                let str = body.substring(s + skey.length, e + ekey.length) + 'true}}';
-                //console.log(str);
-                seachResult = JSON.parse(str);
-            });
-
-            let results = seachResult.storePlatformData['product-dv-product'].results;
-            for (const key in results) {
-                let obj = results[key];
-                let name = obj.name, price = obj.offers[0].priceFormatted;
-                console.log(name, price);
-                if ($.read(name) != price) {
-                    if ($.read(name)) notify.sendNotify('', name + '价格变动,原价格:' + $.read(name) + ',现价格:' + price);
-                    $.write(price, name);
+                let data = JSON.parse(response.body);
+                if (data.resultCount == 1) {
+                    let name = data.results[0].trackName, price = data.results[0].formattedPrice;
+                    console.log(name, price);
+                    if ($.read(name) != price) {
+                        if ($.read(name)) notify.sendNotify(name, name + '价格变动,原价格:' + $.read(name) + ',现价格:' + price);
+                        $.write(price, name);
+                    }
                 }
-            }
+                
+            });
         }
 
     } catch (error) {
         console.log(error);
-        return;
     }
 
 })();
